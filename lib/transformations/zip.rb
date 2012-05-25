@@ -1,18 +1,21 @@
 module Protean
   module Transformations
-    class Zip < Prepper
+    class Zip < Base
 
       # {
-      #   "prep" => "zip",
-      #   "field" => "postal_code",
-      #   "target1" => "zip",
-      #   "target2" => plus4"
+      #   "trans" => "zip",
+      #   "field" => "base", #or plus4
       # }
+
+      # perform map depending on target
+      # the value put into target depends on field
+      # only one target will be produced
       def process(shape)
         shape.value =~ /^(\d{5})-?(\d{4})?$/
-        shape.target[blueprint["target1"]] = $1
-        shape.target[blueprint["target2"]] = $2
+        value = (blueprint["field"] == "base") ? $1 : $2
+        shape.update_value(value)
       end
+
     end
 
   end

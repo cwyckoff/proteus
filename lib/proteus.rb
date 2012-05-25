@@ -7,9 +7,11 @@ class Proteus
     @config = config
   end
 
+  # Proteus.new({}).process(lead_data)
   def process(source)
     source = HashWithIndifferentAccess.new(source)
-
+    source.freeze
+    
     config.inject({}) do |target, transformations|
       field = Protean::Field.new(transformations)
       transformed = field.transform(source)

@@ -1,21 +1,35 @@
 module Protean
+
+  class ProteusImmutableSourceError < Exception; end
+
   class Field
     attr_reader :name, :target, :transformations
-    
+
     def initialize(transformations)
       @name, @transformations = transformations
     end
 
     def transform(source)
       shape = new_shape(source)
-      transformations.each { |t| Transformations.instance_for(name, t).process(shape) }
+      begin
+        transformations.each { |t| Transformations.instance_for(name, t).process(shape) }
+      rescue RuntimeError => e
+        raise ProteusImmutableSourceError if e.message =~ /frozen/
+        raise e
+      end
       shape.current
     end
 
     def new_shape(source)
       @shape ||= Shape.new(name, source)
     end
-    
+
+    ##########################
+    # Shape class encapsulates the changing shape of the Field.
+    # It also preserves the original source, but that is immutable
+    # Shape objects assume that current shape (i.e., the 'target' hash)
+    # should only contain one key/value pair.
+    ##########################
     class Shape
       attr_reader :source, :target, :original_key
 

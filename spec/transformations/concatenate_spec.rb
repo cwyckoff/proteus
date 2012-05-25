@@ -27,6 +27,7 @@ module Protean
           # expect
           shape.target.should == {"name" => "Wyckoff, Chris"}
         end
+
       end
     end
   end
