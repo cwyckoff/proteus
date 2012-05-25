@@ -2,7 +2,7 @@ module Protean
   module Transformations
     class Base
       attr_reader :blueprint
-      
+
       def initialize(blueprint)
         @blueprint = blueprint
       end

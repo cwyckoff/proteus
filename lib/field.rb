@@ -3,15 +3,18 @@ module Protean
   class ProteusImmutableSourceError < Exception; end
 
   class Field
-    attr_reader :name, :target, :transformations
+    attr_reader :name, :target, :transformations, :source
 
-    def initialize(transformations)
-      @name, @transformations = transformations
+    def initialize(field)
+      @name, @transformations = field
     end
 
     def transform(source)
+      @source = source
       shape = new_shape(source)
+
       begin
+        process_subs(shape)
         transformations.each { |t| Transformations.instance_for(name, t).process(shape) }
       rescue RuntimeError => e
         raise ProteusImmutableSourceError if e.message =~ /frozen/
@@ -21,7 +24,22 @@ module Protean
     end
 
     def new_shape(source)
-      @shape ||= Shape.new(name, source)
+      Shape.new(name, source)
+    end
+
+    def process_subs(shape)
+
+      if subs = get_subs
+        p = Proteus.new(subs)
+        new_source = source.dup
+        shape.override_source(new_source.merge(p.process(source)))
+      end
+    end
+
+    def get_subs
+      subs = transformations.select {|t| t.keys.include?("sub_trans")}.first.try(:[],"sub_trans")
+      transformations.delete_if {|t| t.keys.include?("sub_trans")}
+      subs
     end
 
     ##########################
@@ -31,7 +49,8 @@ module Protean
     # should only contain one key/value pair.
     ##########################
     class Shape
-      attr_reader :source, :target, :original_key
+      attr_accessor :target
+      attr_reader :source, :original_key
 
       def initialize(field_name, source)
         @original_key, @source, @target = field_name, source, {}
@@ -56,7 +75,10 @@ module Protean
       def update_value(v)
         target[key] = v
       end
-      
+
+      def override_source(new_source)
+        @source = new_source
+      end
     end
   end
 end

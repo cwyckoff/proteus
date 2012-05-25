@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + "/../init"
 
 class Proteus
   attr_reader :config
-  
+
   def initialize(config)
     @config = config
   end
@@ -11,11 +11,11 @@ class Proteus
   def process(source)
     source = HashWithIndifferentAccess.new(source)
     source.freeze
-    
-    config.inject({}) do |target, transformations|
-      field = Protean::Field.new(transformations)
-      transformed = field.transform(source)
-      target.merge(transformed)
+
+    config.inject({}) do |target, field|
+      protean_field = Protean::Field.new(field)
+      transformed_field = protean_field.transform(source)
+      target.merge(transformed_field)
     end
   end
 

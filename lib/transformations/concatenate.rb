@@ -1,14 +1,15 @@
 module Protean
   module Transformations
     class Concatenate < Base
-      
+
       # {
-      #   "prep" => "concatenate",
+      #   "trans" => "concatenate",
       #   "separator" => ", ",
       #   "format" => "last_name, first_name",
       # }
       def process(shape)
-        shape.update_value(concatenate(shape))
+        shape.target[shape.key] = concatenate(shape)
+        # shape.update_value(concatenate(shape))
       end
 
       private
