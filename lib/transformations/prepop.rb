@@ -6,11 +6,11 @@ module Protean
       #   "trans" => "prepop",
       #   "value" => "ABC123"
       # }
+
       def process(shape)
         shape.update_value(blueprint["value"])
       end
-      
-    end
 
+    end
   end
 end

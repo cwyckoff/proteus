@@ -1,19 +1,16 @@
-module Preppers
+module Protean
+  module Transformations
+    class AddTimestamp < Base
 
-  class AddTimestamp < Prepper
+      # {
+      #   "trans" => "add_timestamp"
+      # }
 
-    # {
-    #   "field" => "delivery_date",
-    #   "prep" => "add_timestamp"
-    # }
+      def process(shape)
+        Time.zone = "US/Central"
+        shape.update_value(Time.now.in_time_zone.strftime("%Y-%m-%d %H:%M:%S %Z"))
+      end
 
-    def prep(fields_proxy)
-      super(fields_proxy)
-
-      Time.zone = "US/Central"
-      fields_proxy.target[key] = Time.zone.now.strftime("%Y-%m-%d %H:%M:%S %Z")
     end
-
   end
-
 end

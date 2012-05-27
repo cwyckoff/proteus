@@ -29,11 +29,7 @@ describe Proteus do
     end
 
     it "freezes the source" do
-      fields = {
-        "first_name" => [
-                         {"trans" => "rogue"}
-                        ]
-      }
+      fields = {"first_name" => [{"trans" => "rogue"}]}
 
       p = Proteus.new(fields)
 
@@ -102,7 +98,20 @@ describe Proteus do
       data = p.process(source)
 
       # expect
-      data["name"].should == "CHRIS, Wy"
+      data["name"].should == "Wy, CHRIS"
+    end
+
+    it "handles remove transformations correctly" do
+      # given
+      source = {"address" => "6650 Malachite Way", "address2" => ""}
+      fields = {"address" => [{"trans" => "map", "target" => "add"}], "address2" => [{"trans" => "remove", "conditional" => "blank?"}]}
+      p = Proteus.new(fields)
+
+      # when
+      data = p.process(source)
+
+      # expect
+      data.should == {"add" => "6650 Malachite Way"}
     end
 
     xit "orders fields in the order specified" do

@@ -9,7 +9,7 @@ module Protean
         let(:shape) { Field::Shape.new("last_name", HashWithIndifferentAccess.new(:first_name => "Chris", :last_name => "Wyckoff")) }
         let(:blueprint) { {"trans" => "lowercase"} }
         let(:transformation) { Lowercase.new(blueprint) }
-        
+
         it "renders field as lowercase" do
           # when
           transformation.process(shape)

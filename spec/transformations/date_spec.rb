@@ -1,60 +1,58 @@
 require 'spec_helper'
 
-module Preppers
-  
-  describe Date do
+module Protean
+  module Transformations
+    describe Date do
+      describe "#process" do
+        before :each do
+          @field_name = "lead_received"
+          @now = Time.now.in_time_zone("MST").to_s
+          @shape = Field::Shape.new(@field_name, HashWithIndifferentAccess.new({"lead_received" => @now}))
+        end
+        it "formats an existing value to a specified date format" do
+          # given
+          blueprint = {"trans" => "date", "format" => "%m-%d-%y", "timezone" => "", "type" => "format"}
+          transformation = Date.new(blueprint)
 
-    describe "#map" do
+          # when
+          transformation.process(@shape)
 
-      before(:each) do
-        @config = {
-          "key" => "timestamp",
-          "map" => "date",
-          "format" => "%Y/%m/%d"
-        }
+          # expect
+          @shape.value.should == Time.parse(@now).strftime("%m-%d-%y")
+        end
+        it "adheres to zone when given" do
+          # given
+          blueprint = {"trans" => "date", "format" => "%m-%d-%y", "timezone" => "Asia/Bangkok", "type" => "format"}
+          transformation = Date.new(blueprint)
 
-        @proxy = FieldsProxy.new(HashWithIndifferentAccess.new(:first_name => "Chris", :last_name => "Wyckoff", :timestamp => "2011-01-25 10:00:00 CST"))
-        @prepper = Date.new(@config)
+          # when
+          transformation.process(@shape)
+
+          # expect
+          @shape.value.should == Time.parse(@now).in_time_zone("Asia/Bangkok").strftime("%m-%d-%y")
+        end
+        it "follows the iso8601 format when set" do
+          # given
+          blueprint = {"trans" => "date", "type" => "iso8601"}
+          transformation = Date.new(blueprint)
+
+          # when
+          transformation.process(@shape)
+
+          # expect
+          @shape.value.should == Time.parse(@now).utc.iso8601
+        end
+        it "raise an error when the incorrect date type is used" do
+          # given
+          blueprint = {"trans" => "date", "type" => "bad_type"}
+          transformation = Date.new(blueprint)
+
+          # expect
+          lambda { transformation.process(@shape) }.should raise_error(Protean::ProteusInvalidDateType)
+        end
       end
-      
-      it "formats an existing value to a specified date format" do
-        # when
-        @prepper.prep(@proxy)
-
-        # expect
-        @proxy.target["timestamp"].should == "2011/01/25"
-      end
-      
-      it "defaults to field name if source is not provided" do
-        # given
-        config = {
-          "field" => "timestamp",
-          "map" => "date",
-          "format" => "%Y/%m/%d"
-        }
-
-        prepper = Date.new(config)
-        
-        # when
-        prepper.prep(@proxy)
-
-        # expect
-        @proxy.target["timestamp"].should == "2011/01/25"
-      end
-      
-      it "converts to iso8601 when the method is set to 'iso8601'" do
-        # given
-        @config["method"] = "iso8601"
-        original_ts = Time.parse(@proxy.source['timestamp']).utc.iso8601
-        prepper = Date.new(@config)
-        prepper.prep(@proxy)
-
-        # expect
-        original_ts.should == @proxy.target["timestamp"]
-      end
-
     end
-
   end
-
 end
+
+

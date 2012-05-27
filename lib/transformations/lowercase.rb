@@ -1,11 +1,11 @@
 module Protean
   module Transformations
     class Lowercase < Base
-      
+
       # {
-      #   "field" => "last_name",
-      #   "prep" => "lowercase"
+      #   "trans" => "lowercase"
       # }
+
       def process(shape)
         shape.update_value(shape.value.downcase)
       end

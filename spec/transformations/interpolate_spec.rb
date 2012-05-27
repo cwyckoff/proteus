@@ -1,53 +1,37 @@
 require 'spec_helper'
 
-module Preppers
+module Protean
+  module Transformations
+    describe Interpolate do
+      describe "#process" do
+        before :each do
+          @blueprint = {"trans" => "interpolate", "format" => "[first_name] [last_name]"}
+          @transformation = Interpolate.new(@blueprint)
+        end
 
-  describe Interpolate do
-    
-    describe "#prep" do
+        it "interploates fields according to the format" do
+          # given
+          shape = Field::Shape.new("name", HashWithIndifferentAccess.new(:first_name => "Chris", :last_name => "Wyckoff"))
 
-      before(:each) do
-        config = {
-          "format" => "[last_name] - [first_name]",
-          "target" => "name",
-          "prep" => "interpolate"
-        }
+          # when
+          @transformation.process(shape)
 
-        @proxy = FieldsProxy.new(HashWithIndifferentAccess.new(
-                                                               :first_name => "Josh",
-                                                               :last_name => "Fenio",
-                                                               :postal_code => '85905-1234',
-                                                               :state => 'NV',
-                                                               :address => "1234 Main St."
-                                                               )
-                                 )
-        @prepper = Interpolate.new(config)
+          # expect
+          shape.value.should == "Chris Wyckoff"
+          shape.key.should == "name"
+        end
+
+        it "replaces a variable with a blank string if it's not on the lead" do
+          # given
+          shape = Field::Shape.new("name", HashWithIndifferentAccess.new(:first_name => "Chris"))
+
+          # when
+          @transformation.process(shape)
+
+          # expect
+          shape.value.should == "Chris "
+        end
       end
-
-      it "replaces variables with values provided in the field prepping hash" do 
-        # when
-        @prepper.prep(@proxy)
-
-        # expect
-        @proxy.target.should == { "name" => "Fenio - Josh" }
-      end
-
-      it "replaces a variable with a blank string if it's not on the lead" do
-        # when
-        config = {
-          "format" => "[missing_key], [last_name]",
-          "target" => "name",
-          "prep" => "interpolate"
-        }
-        prepper = Interpolate.new(config)
-        prepper.prep(@proxy)
-
-        # expect
-        @proxy.target.should == { "name" => ", Fenio" }
-      end
-
     end
-
   end
-
 end

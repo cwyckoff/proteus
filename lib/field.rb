@@ -20,7 +20,7 @@ module Protean
         raise ProteusImmutableSourceError if e.message =~ /frozen/
         raise e
       end
-      shape.current
+      shape.target
     end
 
     def new_shape(source)
@@ -28,7 +28,6 @@ module Protean
     end
 
     def process_subs(shape)
-
       if subs = get_subs
         p = Proteus.new(subs)
         new_source = source.dup

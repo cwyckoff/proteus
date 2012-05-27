@@ -8,8 +8,8 @@ module Protean
       #   "format" => "last_name, first_name",
       # }
       def process(shape)
-        shape.target[shape.key] = concatenate(shape)
-        # shape.update_value(concatenate(shape))
+        # shape.target[shape.key] = concatenate(shape)
+        shape.update_value(concatenate(shape))
       end
 
       private

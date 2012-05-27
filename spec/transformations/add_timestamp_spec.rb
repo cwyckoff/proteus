@@ -1,57 +1,38 @@
 require 'spec_helper'
 
-module Preppers
+module Protean
+  module Transformations
+    describe AddTimestamp do
+      describe "#process" do
+        before :each do
+          @field_name = "lead_received"
+          @blueprint = {"trans" => "add_timestamp"}
+          @shape = Field::Shape.new(@field_name, HashWithIndifferentAccess.new({}))
+          @transformation = AddTimestamp.new(@blueprint)
+          Time.zone = "US/Central"
+          @current_time = Time.now.in_time_zone
+          Time.zone.stub!(:now).and_return(@current_time)
+        end
 
-  describe AddTimestamp do
+        it "renders field as new timestamp" do
+          # when
+          @transformation.process(@shape)
 
-    describe "#prep" do
+          # expect
+          @shape.value.should == @current_time.strftime("%Y-%m-%d %H:%M:%S %Z")
+          @shape.key.should == @field_name
+        end
 
-      before(:each) do
-        config = {
-          "field" => "lead_date",
-          "prep" => "add_timestamp"
-        }
+        it "uses CST (or CDT)" do
+          # when
+          @transformation.process(@shape)
 
-        @proxy = FieldsProxy.new(HashWithIndifferentAccess.new(:first_name => "Chris", :last_name => "Wyckoff"))
-        Time.zone = "US/Central"
-        @time = Time.zone.now
-        Time.zone.stub!(:now).and_return(@time)
-        @prepper = AddTimestamp.new(config)
+          # expect
+          # this is needed due to daylight savings time on local machines
+          Time.zone.parse(@shape.value).zone.should =~ /C(D|S)T/
+        end
       end
-      
-      it "adds a timestamp to target key" do
-        # when
-        @prepper.prep(@proxy)
-
-        # expect
-        @proxy.target.should == {"lead_date" => @time.strftime("%Y-%m-%d %H:%M:%S %Z")}
-      end
-
-      it "defaults to field name if target is not specified" do
-        # given
-        config = {
-          "field" => "lead_date",
-          "prep" => "add_timestamp"
-        }
-        prepper = AddTimestamp.new(config)
-        
-        # when
-        prepper.prep(@proxy)
-
-        # expect
-        @proxy.target.should == {"lead_date" => @time.strftime("%Y-%m-%d %H:%M:%S %Z")}
-      end
-      
-      it "timestamp should be CST (or CDT)" do
-        # when
-        @prepper.prep(@proxy)
-
-        # expect
-        Time.zone.parse(@proxy.target["lead_date"]).zone.should =~ /C(D|S)T/ # this is needed due to daylight savings time on local machines
-      end
-
     end
-
   end
-
 end
+

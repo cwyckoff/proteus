@@ -1,25 +1,19 @@
-module Preppers
+module Protean
+  module Transformations
+    class ValueMap < Base
 
-  class ValueMap < Prepper
+      # {
+      #   "trans" => "value_map"
+      #   "mappings" => {
+      #     "old_value" => "new_value"
+      #   },
+      #   "default" => "some_value"
+      # }
 
-    # {
-    #   "prep" => "value_map"
-    #   "key" => "source_id",
-    #   "mappings" => {
-    #     "old_value" => "new_value"
-    #   },
-    #   "default" => "some_value"
-    # }
-    
-    def prep(fields_proxy)
-      super(fields_proxy)
-
-      val =  @config["mappings"].key?(fields_proxy.source[key]) ? @config["mappings"][fields_proxy.source[key]] : @config["default"]
-
-      fields_proxy.target[key] = val
-      
+      def process(shape)
+        val = blueprint["mappings"][shape.value] || val = blueprint["default"]
+        shape.update_value(val) if val
+      end
     end
-
- end
-
+  end
 end
