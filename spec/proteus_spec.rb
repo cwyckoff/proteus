@@ -113,39 +113,31 @@ describe Proteus do
       # expect
       data.should == {"add" => "6650 Malachite Way"}
     end
+  end
 
-    xit "orders fields in the order specified" do
+  describe ".order" do
+    it "sorts fields in the order specified" do
+      source = {"first_name" => "Chris",
+        "last_name" => "Wyckoff",
+        "address" => "9 Exchange Place",
+        "phone" => "801-555-1234",
+        "email_address" => "cwyckoff@test.com"}
       fields = {
-        "first_name" => [{
-                           "prep" => "map",
-                           "target" => "fname"
-                         }],
-        "last_name" => [{
-                          "prep" => "map",
-                          "target" => "lname"
-                        }],
-        "address" => [{
-                        "prep" => "map",
-                        "target" => "addr"
-                      }],
-        "phone" => [{
-                      "prep" => "map",
-                      "target" => "phone_num"
-                    }],
-        "email_address" => [{
-                              "prep" => "map",
-                              "target" => "email"
-                            }],
-        "_order" => ["email_address","last_name", "phone", "address", "first_name"]
+        "first_name" => [{"trans" => "map", "target" => "fname"}],
+        "last_name" => [{"trans" => "map", "target" => "lname"}],
+        "address" => [{"trans" => "map", "target" => "addr"}],
+        "phone" => [{"trans" => "map", "target" => "phone_num"}],
+        "email_address" => [{"trans" => "map", "target" => "email"}],
       }
+      order = ["email","lname", "phone_num", "addr", "fname"]
       p = Proteus.new(fields)
 
       # when
-      lead = field_fields.process(source)
+      lead = p.process(source)
+      ordered_lead = Proteus.order(lead, order)
 
       # expect
-      lead.to_a.first.should include("email")
-      lead.to_a.last.should include("fname")
+      ordered_lead.keys.should == ["email","lname", "phone_num", "addr", "fname"]
     end
   end
 

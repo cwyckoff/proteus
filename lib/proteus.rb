@@ -19,4 +19,8 @@ class Proteus
     end
   end
 
+  def self.order(hsh, order)
+    Hash[hsh.sort_by {|key,value| order.index(key)}]
+  end
+
 end
