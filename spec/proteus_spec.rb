@@ -139,6 +139,29 @@ describe Proteus do
       # expect
       ordered_lead.keys.should == ["email","lname", "phone_num", "addr", "fname"]
     end
+    it "sorts fields last if not specified" do
+      source = {"first_name" => "Chris",
+        "last_name" => "Wyckoff",
+        "address" => "9 Exchange Place",
+        "phone" => "801-555-1234",
+        "email_address" => "cwyckoff@test.com"}
+      fields = {
+        "first_name" => [{"trans" => "map", "target" => "fname"}],
+        "last_name" => [{"trans" => "map", "target" => "lname"}],
+        "address" => [{"trans" => "map", "target" => "addr"}],
+        "phone" => [{"trans" => "map", "target" => "phone_num"}],
+        "email_address" => [{"trans" => "map", "target" => "email"}],
+      }
+      order = ["email","lname","addr", "fname"]
+      p = Proteus.new(fields)
+
+      # when
+      lead = p.process(source)
+      ordered_lead = Proteus.order(lead, order)
+
+      # expect
+      ordered_lead.keys.should == ["email","lname", "addr","fname","phone_num"]
+    end
   end
 
 end

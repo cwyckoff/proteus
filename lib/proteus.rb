@@ -20,7 +20,7 @@ class Proteus
   end
 
   def self.order(hsh, order)
-    Hash[hsh.sort_by {|key,value| order.index(key)}]
+    Hash[hsh.sort_by {|key,value| order.index(key) || 9999}]
   end
 
 end
