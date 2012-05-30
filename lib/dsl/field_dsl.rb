@@ -10,14 +10,14 @@ module Protean
 
       def with(signature, *args)
         signature = signature.to_s
-        trans ||= Protean::Transformations.constants.map{|trans| trans.to_s.underscore }.join("|")
+        trans ||= Protean::Transformations.to_regexp
         Regexp.new("^(#{trans})_?(.*)").match(signature)
         transformation = {"trans" => $1}
         if $2.present?
           keys = $2.split("_and_")
           transformation.merge!(Hash[keys.zip(args)])
         end
-        transformations << Protean::Transformations.instance_for(name, transformation)
+        transformations << new_transformation(name, transformation)
         self
       end
 
@@ -27,6 +27,10 @@ module Protean
         @subject.name
       end
 
+      def new_transformation(name, transformation)
+        Protean::Transformations.instance_for(name, transformation)
+      end
+      
       def transformations
         @subject.transformations
       end

@@ -14,8 +14,8 @@ class Proteus
 
     config.inject({}) do |target, field|
       protean_field = Protean::Field.new(field)
-      transformed_field = protean_field.transform(source)
-      target.merge(transformed_field)
+      transformed = protean_field.transform(source)
+      target.merge(transformed)
     end
   end
 

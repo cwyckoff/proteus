@@ -5,6 +5,7 @@ Fie = Protean::DSL::FieldDSL
 module Protean
   module DSL
     describe Field do
+
       describe "#new" do
         it "creates a wrapper around a field with given name" do
           # when
@@ -15,20 +16,24 @@ module Protean
           field.name.should == "first_name"
         end
       end
+
       describe "#with" do
         it "creates a transformation inside the field and returns itself" do
           # given
           field = Fie.new("postal_code")
-          field.transformations.should == []
+
+          # expect
+          field.transformations.to_a.should == []
 
           # when
           returned = field.with(:zip_type, "prefix")
 
           # expect
           returned.should == field
-          returned.transformations.count.should == 1
-          returned.transformations.first.class.should == Protean::Transformations::Zip
+          returned.transformations.to_a.count.should == 1
+          returned.transformations.to_a.first.class.should == Protean::Transformations::Zip
         end
+
         it "pulls from the first argument the transformation type and cardinality" do
           # given
           field = Fie.new("postal_code")
@@ -37,8 +42,9 @@ module Protean
           field.with(:zip_type, "prefix")
 
           # expect
-          field.transformations.first.blueprint["type"].should == "prefix"
+          field.transformations.to_a.first.blueprint["type"].should == "prefix"
         end
+
         it "handles multiple arguments to the transformation" do
           # given
           field = Fie.new("date")
@@ -47,25 +53,27 @@ module Protean
           returned = field.with(:date_format_and_timezone, "%Y-%m-%d", "MST")
 
           # expect
-          trans = returned.transformations.first
+          trans = returned.transformations.to_a.first
           trans.blueprint["format"].should == "%Y-%m-%d"
           trans.blueprint["timezone"].should == "MST"
         end
       end
+
       describe "#and" do
         it "creates and adds a transformtion to the field" do
           # given
           field = Fie.new("date")
           field.with(:date_format_and_timezone, "%Y-%m-%d", "MST")
-          field.transformations.count.should == 1
+          field.transformations.to_a.count.should == 1
 
           # when
           field.and(:map_target, "DOB")
 
           # expect
-          field.transformations.count.should == 2
+          field.transformations.to_a.count.should == 2
         end
       end
+
       describe "#considering" do
         xit "changes context to modifying the sub fields" do
           # given
@@ -97,6 +105,7 @@ module Protean
 
         end
       end
+
       describe "#to_hash" do
         xit "returns a valid hash for the Protean::Field class" do
           # given

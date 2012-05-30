@@ -1,15 +1,5 @@
 require 'spec_helper'
 
-module Protean
-  module Transformations
-    class Rogue < Base
-      def process(shape)
-        shape.original[shape.key] = "a new value"
-      end
-    end
-  end
-end
-
 describe Proteus do
 
   describe "#process" do
@@ -29,11 +19,11 @@ describe Proteus do
     end
 
     it "freezes the source" do
+      # given
       fields = {"first_name" => [{"trans" => "rogue"}]}
 
-      p = Proteus.new(fields)
-
-      lambda { p.process({:first_name => "Chris"}) }.should raise_error(Protean::ProteusImmutableSourceError)
+      # expect
+      lambda { Proteus.new(fields).process({:first_name => "Chris"}) }.should raise_error(Protean::ImmutableSourceError)
     end
 
     it "applies transformations to data" do
@@ -44,61 +34,6 @@ describe Proteus do
       %w[fname lname addr].each do |key|
         lead.should have_key(key)
       end
-    end
-
-    it "applies multiple transformations per field" do
-      # given
-      fields = {
-        "first_name" => [
-                         {"trans" => "lowercase"},
-                         {"trans" => "truncate", "limit" => 4},
-                         {"trans" => "map", "target" => "fname"}
-                        ]
-      }
-      p = Proteus.new(fields)
-
-      # when
-      data = p.process(source)
-
-      # expect
-      data["fname"].should == "chri"
-    end
-
-    it "applies multiple transformations regardless of when the key transformation occurs" do
-      # given
-      fields = {
-        "first_name" => [
-          {"trans" => "lowercase"},
-          {"trans" => "map", "target" => "fname"},
-          {"trans" => "truncate", "limit" => 4}
-        ]
-      }
-      p = Proteus.new(fields)
-
-      # when
-      data = p.process(source)
-
-      # expect
-      data["fname"].should == "chri"
-    end
-
-    it "handles complicated nested fields" do
-      # given
-      source = {"first_name" => "Chris", "last_name" => "Wycoff"}
-      fields = {
-        "name" => [
-          {"trans" => "concatenate", "separator" => ", ", "format" => "last_name, first_name"},
-          {"sub_trans" => {"first_name" => [{"trans" => "uppercase"}], "last_name" => [{"trans" => "truncate", "limit" => "2"}]}}
-        ]
-      }
-
-      p = Proteus.new(fields)
-
-      # when
-      data = p.process(source)
-
-      # expect
-      data["name"].should == "Wy, CHRIS"
     end
 
     it "handles remove transformations correctly" do
@@ -116,19 +51,17 @@ describe Proteus do
   end
 
   describe ".order" do
-    it "sorts fields in the order specified" do
-      source = {"first_name" => "Chris",
-        "last_name" => "Wyckoff",
-        "address" => "9 Exchange Place",
-        "phone" => "801-555-1234",
-        "email_address" => "cwyckoff@test.com"}
-      fields = {
+
+    let(:source) { {"first_name" => "Chris", "last_name" => "Wyckoff", "address" => "9 Exchange Place", "phone" => "801-555-1234", "email_address" => "cwyckoff@test.com"} }
+    let(:fields) { {
         "first_name" => [{"trans" => "map", "target" => "fname"}],
         "last_name" => [{"trans" => "map", "target" => "lname"}],
         "address" => [{"trans" => "map", "target" => "addr"}],
         "phone" => [{"trans" => "map", "target" => "phone_num"}],
-        "email_address" => [{"trans" => "map", "target" => "email"}],
-      }
+        "email_address" => [{"trans" => "map", "target" => "email"}]
+      } }
+    
+    it "sorts fields in the order specified" do
       order = ["email","lname", "phone_num", "addr", "fname"]
       p = Proteus.new(fields)
 
@@ -139,19 +72,8 @@ describe Proteus do
       # expect
       ordered_lead.keys.should == ["email","lname", "phone_num", "addr", "fname"]
     end
+
     it "sorts fields last if not specified" do
-      source = {"first_name" => "Chris",
-        "last_name" => "Wyckoff",
-        "address" => "9 Exchange Place",
-        "phone" => "801-555-1234",
-        "email_address" => "cwyckoff@test.com"}
-      fields = {
-        "first_name" => [{"trans" => "map", "target" => "fname"}],
-        "last_name" => [{"trans" => "map", "target" => "lname"}],
-        "address" => [{"trans" => "map", "target" => "addr"}],
-        "phone" => [{"trans" => "map", "target" => "phone_num"}],
-        "email_address" => [{"trans" => "map", "target" => "email"}],
-      }
       order = ["email","lname","addr", "fname"]
       p = Proteus.new(fields)
 
