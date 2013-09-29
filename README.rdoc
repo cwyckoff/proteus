@@ -15,7 +15,7 @@ For example
     ]
   }
 
-  Proteus.new(opts).process({first_name: 'Alexendar', last_name: 'Barton'}
+  Proteus.new(opts).process({first_name: 'Alexender', last_name: 'Barton'}
   
 would return
 
